@@ -1,27 +1,16 @@
 import { Link } from 'react-router-dom';
 import OrderRow from '../components/OrderRow';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchOrders } from '../features/ordersSlice';
 
 export default function Home() {
-  const orders = [
-    {
-      id: 1,
-      status: 'Success',
-      customer: 'fathan@mail.com',
-      store: 'Famima',
-      amount: '₩500.00',
-      description: 'lorem ipsum dolor sit amet consectetur, adipisicing elit. Ratione tenetur dolores magnam.',
-      createdAt: '2024-12-01',
-    },
-    {
-      id: 2,
-      status: 'Ordered',
-      customer: 'fathan@mail.com',
-      store: 'Alfamart',
-      amount: '₩300.00',
-      description: 'lorem ipsum dolor sit amet consectetur, adipisicing elit. Ratione tenetur dolores magnam.',
-      createdAt: '2024-12-26',
-    },
-  ];
+  const orders = useSelector((state) => state.orders.value);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchOrders());
+  }, []);
 
   return (
     <>
@@ -55,7 +44,6 @@ export default function Home() {
               {orders.map((order) => (
                 <OrderRow key={order.id} order={order} />
               ))}
-              {/* // <OrderRow /> */}
             </tbody>
           </table>
         </div>

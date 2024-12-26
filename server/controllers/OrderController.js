@@ -1,19 +1,19 @@
-const { Order } = require('../models');
+const { Order, User, Store } = require('../models');
 
 class OrderController {
   static async findAll(req, res, next) {
     try {
-      if (req.user.role === 'admin' || req.user.role === 'deliveryManager') {
-        const orders = await Order.findAll();
-        res.status(200).json(orders);
-      } else {
-        const orders = await Order.findAll({
-          where: {
-            UserId: req.user.id,
-          },
-        });
-        res.status(200).json(orders);
+      const query = {
+        include: [
+          { model: User, attributes: ['email'] },
+          { model: Store, attributes: ['name'] },
+        ],
+      };
+      if (req.user.role === 'customer') {
+        query.where = { UserId: req.user.id };
       }
+      const orders = await Order.findAll(query);
+      res.status(200).json(orders);
     } catch (error) {
       console.log(error);
       next(error);
@@ -31,8 +31,9 @@ class OrderController {
 
   static async create(req, res, next) {
     try {
-      const { UserId, amount, description, status } = req.body;
+      const { StoreId, UserId, amount, description, status } = req.body;
       const order = await Order.create({
+        StoreId,
         UserId,
         amount,
         description,
