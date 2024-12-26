@@ -32,7 +32,7 @@ class AuthController {
         throw { name: 'BadRequest', message: 'Invalid email or password' };
       }
       const access_token = signToken({ id: user.id, email: user.email });
-      res.json({ access_token });
+      res.json({ email: user.email, role: user.role, access_token });
     } catch (error) {
       console.log(error);
       next(error);
