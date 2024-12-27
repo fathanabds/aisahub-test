@@ -46,8 +46,10 @@ export default function UpdateStatus({ isOpen, onClose, order, setIsModalOpen })
         </div>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-gray-700">Order Status</label>
-            <select onChange={handleChange} value={status} className="w-full mt-1 p-2 border rounded">
+            <label className="block text-gray-700" htmlFor="updateStatus">
+              Order Status
+            </label>
+            <select id="updateStatus" onChange={handleChange} value={status} className="w-full mt-1 p-2 border rounded">
               <option value={'ordered'}>Ordered</option>
               <option value={'inProgress'}>In Progress</option>
               <option value={'delivered'}>Delivered</option>

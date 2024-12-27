@@ -1,16 +1,46 @@
-import { Link } from 'react-router-dom';
 import OrderRow from '../components/OrderRow';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders } from '../features/ordersSlice';
+import { useDebouncedCallback } from 'use-debounce';
+import { Pagination } from '@mui/material';
+import AddOrder from '../components/AddOrder';
 
 export default function Home() {
   const orders = useSelector((state) => state.orders.value);
+  const { totalPages, currentPage } = useSelector((state) => state.orders.pagination);
+  const [page, setPage] = useState(currentPage);
+
   const dispatch = useDispatch();
 
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+
+  const debounced = useDebouncedCallback(
+    // function
+    (value) => {
+      setSearch(value);
+      setPage(1);
+    },
+    // delay in ms
+    250
+  );
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  function handleAddClick() {
+    setIsModalOpen(true);
+  }
+
+  function handleCloseModal() {
+    setIsModalOpen(false);
+  }
+
   useEffect(() => {
-    dispatch(fetchOrders());
-  }, []);
+    dispatch(fetchOrders(search, status, page));
+  }, [search, status, page]);
+
+  const handlePageChange = (_, page) => setPage(page);
 
   return (
     <>
@@ -20,11 +50,37 @@ export default function Home() {
           <h2 className="text-2xl font-bold">Order List</h2>
           {localStorage.getItem('role') == 'admin' && (
             <div className="flex items-center">
-              <Link to={'/orders/add'} className="btn hover:bg-green-400 bg-green-500 text-white px-4 py-2 rounded">
+              <button onClick={handleAddClick} className="btn hover:bg-green-400 bg-green-500 text-white px-4 py-2 rounded">
                 + Add Order List
-              </Link>
+              </button>
+              <AddOrder setIsModalOpen={setIsModalOpen} isOpen={isModalOpen} onClose={handleCloseModal} />
             </div>
           )}
+        </div>
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="flex-grow">
+            <label htmlFor="search" className="sr-only">
+              Search transaction
+            </label>
+            <input onChange={(e) => debounced(e.target.value)} id="search" type="text" placeholder="Search transaction..." className="border border-gray-300 rounded-lg p-2 w-full" />
+          </div>
+          <label htmlFor="status" className="text-sm font-medium">
+            Order Status
+          </label>
+          <select
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+            value={status}
+            id="status"
+            className="border border-gray-300 rounded-lg p-2"
+          >
+            <option value={''}>All</option>
+            <option value={'ordered'}>Ordered</option>
+            <option value={'inProgress'}>In Progress</option>
+            <option value={'delivered'}>Delivered</option>
+          </select>
         </div>
         <div className="bg-white shadow-md rounded-lg overflow-hidden">
           <table className="min-w-full bg-white">
@@ -48,10 +104,11 @@ export default function Home() {
           </table>
         </div>
         <div className="flex justify-between items-center mt-6">
-          <p className="text-gray-600">Page 2 of 15</p>
+          <p className="text-gray-600">
+            Page {currentPage} of {totalPages}
+          </p>
           <div className="flex">
-            <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded mr-2">Previous</button>
-            <button className="px-3 py-1 bg-gray-200 text-gray-700 rounded">Next</button>
+            <Pagination color="primary" onChange={handlePageChange} page={page} count={totalPages} variant="outlined" shape="rounded" />
           </div>
         </div>
       </div>

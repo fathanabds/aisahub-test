@@ -1,19 +1,36 @@
+const { Op } = require('sequelize');
 const { Order, User, Store } = require('../models');
 
 class OrderController {
   static async findAll(req, res, next) {
     try {
+      const { search, status, page } = req.query;
       const query = {
+        limit: 5,
+        offset: 0,
+        where: {},
+        order: [['createdAt', 'DESC']],
         include: [
           { model: User, attributes: ['email'] },
           { model: Store, attributes: ['name'] },
         ],
       };
-      if (req.user.role === 'customer') {
-        query.where = { UserId: req.user.id };
+      if (search) {
+        query.where.description = {
+          [Op.iLike]: `%${search}%`,
+        };
       }
-      const orders = await Order.findAll(query);
-      res.status(200).json(orders);
+      if (status) {
+        query.where.status = status;
+      }
+      if (page) {
+        query.offset = (page - 1) * query.limit;
+      }
+      if (req.user.role === 'customer') {
+        query.where.UserId = req.user.id;
+      }
+      const { rows, count } = await Order.findAndCountAll(query);
+      res.status(200).json({ orders: rows, pagination: { totalPages: Math.ceil(count / query.limit), currentPage: page || 1, totalData: count } });
     } catch (error) {
       console.log(error);
       next(error);

@@ -24,11 +24,6 @@ export default function Sidebar() {
             <li className="px-4 py-2 text-gray-700 hover:bg-gray-200">
               <Link to={'/'}>Dashboard</Link>
             </li>
-            {localStorage.getItem('role') == 'admin' && (
-              <li className="px-4 py-2 text-gray-700 hover:bg-gray-200">
-                <Link to={'/orders/add'}>Add Order List</Link>
-              </li>
-            )}
           </ul>
         </nav>
         <div className="absolute bottom-0 w-full p-4">
